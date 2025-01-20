@@ -30,9 +30,9 @@ const LoginPage = () => {
       if (!response.ok) {
         throw new Error(data.error || "Something went wrong");
       }
-
       setMessage(data.message);
       // After successful login, redirect to the dashboard page
+      localStorage.setItem("token", data.token);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);

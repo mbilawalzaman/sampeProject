@@ -20,7 +20,10 @@ const UserTable = () => {
           },
         );
         if (!response.ok) {
-          throw new Error("Failed to fetch users");
+          localStorage.clear();
+          alert("Session expired. Please log in again.");
+          window.location.href = "/"; // Redirect to login page
+          return;
         }
         const data = await response.json();
         setUsers(data);

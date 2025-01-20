@@ -25,13 +25,13 @@ app.use(bodyParser.json());
 // Session middleware configuration
 app.use(
   session({
-    secret: process.env.SESSION_SECRET_KEY, // Secret key for encrypting the session ID cookie
-    resave: false, // Do not save session if unmodified
-    saveUninitialized: false, // Do not create a session until something is stored
+    secret: process.env.SESSION_SECRET_KEY,
+    resave: false, // Prevent session being saved back to the store unless modified
+    saveUninitialized: false, // Don't save uninitialized sessions
     cookie: {
-      httpOnly: true, // Ensures the cookie is not accessible via JavaScript (Security)
-      secure: process.env.NODE_ENV === "production", // Ensure secure cookies in production
-      maxAge: 1000 * 60, // 1 hour session expiry
+      maxAge: 3600000, // 1 hour
+      httpOnly: true, // Prevent client-side JavaScript from accessing cookies
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
     },
   }),
 );
