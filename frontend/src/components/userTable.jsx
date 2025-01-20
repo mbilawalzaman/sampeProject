@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const UserTable = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchId, setSearchId] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -22,7 +24,7 @@ const UserTable = () => {
         if (!response.ok) {
           localStorage.clear();
           alert("Session expired. Please log in again.");
-          window.location.href = "/"; // Redirect to login page
+          navigate("/");
           return;
         }
         const data = await response.json();
