@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
-import db from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { randomBytes } from "crypto";
+import { User } from "../models"; // Import Sequelize models
 
 dotenv.config();
 
@@ -10,8 +10,8 @@ const userController = {
   // Fetch all users
   getUsers: async (req, res) => {
     try {
-      const [rows] = await db.query("SELECT * FROM users");
-      res.json(rows);
+      const users = await User.findAll(); // Fetch all users using Sequelize
+      res.json(users);
     } catch (err) {
       console.error(err);
       res.status(500).send("Database error");
@@ -34,12 +34,9 @@ const userController = {
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
       // Save the user to the database
-      await db.query(
-        "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-        [name, email, hashedPassword],
-      );
+      const user = await User.create({ name, email, password: hashedPassword });
 
-      res.status(201).json({ message: "User created successfully!" });
+      res.status(201).json({ message: "User created successfully!", user });
     } catch (err) {
       console.error(err);
       res.status(500).send("Server error");
@@ -55,13 +52,13 @@ const userController = {
 
     try {
       // Query the database for the user
-      const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+      const user = await User.findByPk(id);
 
-      if (rows.length === 0) {
+      if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
 
-      res.status(200).json(rows[0]); // Send the first user object
+      res.status(200).json(user);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Server error" });
@@ -70,46 +67,45 @@ const userController = {
 
   login: async (req, res) => {
     const { email, password } = req.body;
-
+  
     try {
       // Check if user exists in the database
-      const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [
-        email,
-      ]);
-
+      const user = await User.findOne({ where: { email } });
+  
       // If no user found
-      if (rows.length === 0) {
+      if (!user) {
         return res.status(400).json({ error: "Invalid credentials" });
       }
-
-      // Get the first user (because query returns an array of rows)
-      const user = rows[0];
-
+  
       // Check if the password matches the hashed password in the database
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(400).json({ error: "Invalid credentials" });
       }
-
+  
       // Create JWT token
       const token = jwt.sign(
         { id: user.id, email: user.email },
-        process.env.JWT_SECRET_KEY, // Use the secret key from the .env file
-        { expiresIn: "1h" }, // Token expires in 1 hour
+        process.env.JWT_SECRET_KEY,
+        { expiresIn: "1h" }
       );
-
+  
       // Store user session
       req.session.user = { id: user.id, email: user.email }; // Store user info in the session
-
+  
       // Send the token and success message
-      res.json({ message: "Login successful", token });
+      res.json({
+        message: "Login successful",
+        token,
+        user: req.session.user, // Include session user info in the response
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Server error" });
     }
   },
+  
 
-  // Logout method to clear session
   logout: (req, res) => {
     req.session.destroy((err) => {
       if (err) {
@@ -117,14 +113,6 @@ const userController = {
       }
       res.json({ message: "Logged out successfully" });
     });
-  },
-  // Example: Additional route for testing
-  getMessage: async (req, res) => {
-    const randomKey = randomBytes(32).toString("hex"); // Convert the bytes to a hex string
-
-    console.log("Generated random key:", randomKey);
-    console.log("Message route hit"); // Add this line for debugging
-    res.json({ message: "Hello from the controller!" });
   },
 };
 
