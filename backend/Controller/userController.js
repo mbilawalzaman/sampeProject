@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { randomBytes } from "crypto";
-import { User } from "../models"; // Import Sequelize models
+import User from "../models/user.js"; // Import Sequelize models
 
 dotenv.config();
 
@@ -67,32 +67,32 @@ const userController = {
 
   login: async (req, res) => {
     const { email, password } = req.body;
-  
+
     try {
       // Check if user exists in the database
       const user = await User.findOne({ where: { email } });
-  
+
       // If no user found
       if (!user) {
         return res.status(400).json({ error: "Invalid credentials" });
       }
-  
+
       // Check if the password matches the hashed password in the database
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(400).json({ error: "Invalid credentials" });
       }
-  
+
       // Create JWT token
       const token = jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_SECRET_KEY,
         { expiresIn: "1h" }
       );
-  
+
       // Store user session
       req.session.user = { id: user.id, email: user.email }; // Store user info in the session
-  
+
       // Send the token and success message
       res.json({
         message: "Login successful",
@@ -104,7 +104,13 @@ const userController = {
       res.status(500).json({ error: "Server error" });
     }
   },
-  
+
+  getMessage: async (req, res) => {
+    const randomKey = randomBytes(32).toString("hex"); // Generate a random key
+    console.log("Generated random key:", randomKey);
+
+    res.json({ message: "Hello from the controller!", randomKey });
+  },
 
   logout: (req, res) => {
     req.session.destroy((err) => {
