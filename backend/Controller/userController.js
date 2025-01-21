@@ -43,6 +43,49 @@ const userController = {
     }
   },
 
+updateUser: async (req, res) => {
+  const { id } = req.params;
+  const { name, email, password } = req.body;  // Destructure updated user data from the request body
+
+  if (!id) {
+    return res.status(400).json({ error: "User ID is required!" });
+  }
+
+  // Validate if at least one field (name, email, or password) is provided for update
+  if (!name && !email && !password) {
+    return res.status(400).json({ error: "At least one field (name, email, or password) is required to update!" });
+  }
+
+  try {
+    // Query the database for the user by ID
+    const user = await User.findByPk(id);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Update the user with the new values
+    // You only update fields that are provided in the request body
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) {
+      // Optionally hash the new password if provided
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
+    }
+
+    // Save the updated user to the database
+    await user.save();
+
+    // Respond with the updated user data
+    res.status(200).json({ message: "User updated successfully", user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+},
+
+
   getUserById: async (req, res) => {
     const { id } = req.params;
 
