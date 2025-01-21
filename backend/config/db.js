@@ -5,7 +5,7 @@ dotenv.config();
 
 // Load the correct environment configuration
 const env = process.env.NODE_ENV || "development"; // Default to 'development' if NODE_ENV is not set
-import config from "./config/config.js";
+import config from "./config.js";
 
 // Extract configuration based on environment
 const { username, password, database, host, dialect } = config[env];

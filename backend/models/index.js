@@ -2,7 +2,8 @@ import fs from "fs";
 import path from "path";
 import { Sequelize } from "sequelize";
 import process from "process";
-import config from "../config/config.json" assert { type: "json" }; // Only needed for import of JSON in Node 16+
+import config from "../config/config.js"; // Use config.js
+// Only needed for import of JSON in Node 16+
 
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || "development";
@@ -16,7 +17,7 @@ if (config.use_env_variable) {
     config.database,
     config.username,
     config.password,
-    config
+    config,
   );
 }
 
@@ -31,7 +32,7 @@ fs.readdirSync(__dirname)
   })
   .forEach((file) => {
     const model = import(path.join(__dirname, file)).then((module) =>
-      module.default(sequelize, Sequelize.DataTypes)
+      module.default(sequelize, Sequelize.DataTypes),
     );
     db[model.name] = model;
   });

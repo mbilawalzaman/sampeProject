@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { randomBytes } from "crypto";
-import User from "../models/user.js"; // Import Sequelize models
+import User from "../models/userModel.js"; // Import Sequelize models
 
 dotenv.config();
 
@@ -53,7 +53,6 @@ const userController = {
     try {
       // Query the database for the user
       const user = await User.findByPk(id);
-
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -87,7 +86,7 @@ const userController = {
       const token = jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_SECRET_KEY,
-        { expiresIn: "1h" }
+        { expiresIn: "1h" },
       );
 
       // Store user session
@@ -119,6 +118,16 @@ const userController = {
       }
       res.json({ message: "Logged out successfully" });
     });
+  },
+  // Check session controller
+  checkSession: (req, res) => {
+    if (req.session.user) {
+      // User is authenticated
+      res.json({ isAuthenticated: true, user: req.session.user });
+    } else {
+      // No valid session
+      res.json({ isAuthenticated: false });
+    }
   },
 };
 

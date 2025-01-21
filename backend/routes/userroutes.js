@@ -7,6 +7,8 @@ const router = express.Router();
 // Example route (no authentication required)
 router.get("/message", userController.getMessage);
 
+router.get("/session-check", userController.checkSession);
+
 // Protected route: Fetch all users (requires authentication)
 router.get("/getUsers", isAuthenticated, userController.getUsers);
 

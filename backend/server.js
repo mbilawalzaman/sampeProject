@@ -29,7 +29,7 @@ app.use(
     resave: false, // Prevent session being saved back to the store unless modified
     saveUninitialized: false, // Don't save uninitialized sessions
     cookie: {
-      maxAge: 3600000, // 1 hour
+      maxAge: 1000 * 60, // 1 hour
       httpOnly: true, // Prevent client-side JavaScript from accessing cookies
       secure: process.env.NODE_ENV === "production", // Use secure cookies in production
     },
