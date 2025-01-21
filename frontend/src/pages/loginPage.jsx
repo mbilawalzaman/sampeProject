@@ -41,6 +41,10 @@ const LoginPage = () => {
     }
   };
 
+  const handleSignUpRedirect = () => {
+    navigate("/signup");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
@@ -84,10 +88,24 @@ const LoginPage = () => {
             disabled={loading}
             className={`w-full py-2 bg-blue-500 text-white font-semibold rounded-lg focus:outline-none ${
               loading ? "opacity-50" : ""
-            }`}>
+            }`}
+          >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        {/* Sign Up button */}
+        <div className="text-center mt-4">
+          <p>
+            Don't have an account?{" "}
+            <button
+              onClick={handleSignUpRedirect}
+              className="text-blue-500 hover:underline focus:outline-none font-semibold"
+            >
+              Sign up
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
