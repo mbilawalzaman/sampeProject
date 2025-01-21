@@ -7,7 +7,7 @@ const isAuthenticated = async () => {
       "http://localhost:5000/api/users/session-check",
       {
         credentials: "include", // Include cookies for session-based authentication
-      },
+      }
     );
 
     if (!response.ok) {
@@ -43,12 +43,18 @@ const ProtectedRoute = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
-  if (authStatus === null) {
-    return <div>Loading...</div>; // Show a loading indicator while checking the session
+  // If session is invalid, redirect to the login page with a state
+  if (authStatus === false) {
+    return (
+      <Navigate
+        to="/"
+        replace
+        state={{ from: "protected", reason: "pleaseLogin" }}
+      />
+    );
   }
 
-  // If session is invalid, redirect to the login page
-  return authStatus ? children : <Navigate to="/" replace />;
+  return authStatus ? children : null; // Render children if authenticated
 };
 
 export default ProtectedRoute;

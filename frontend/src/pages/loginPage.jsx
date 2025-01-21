@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -8,7 +8,18 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation(); // Access location state
+  const [redirectError, setRedirectError] = useState(null);
 
+  useEffect(() => {
+    if (location.state?.reason === "pleaseLogin") {
+      setRedirectError("Please log in to access this page.");
+      const timer = setTimeout(() => {
+        setRedirectError(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -33,7 +44,7 @@ const LoginPage = () => {
       setMessage(data.message);
       // After successful login, redirect to the dashboard page
       localStorage.setItem("token", data.token);
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -49,7 +60,16 @@ const LoginPage = () => {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
         <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
+
+        {/* Show redirect error message */}
+        {redirectError && (
+          <div className="text-red-500 text-center mb-4">{redirectError}</div>
+        )}
+
+        {/* Show error from login submission */}
         {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+
+        {/* Show success message */}
         {message && (
           <div className="text-green-500 text-center mb-4">{message}</div>
         )}
