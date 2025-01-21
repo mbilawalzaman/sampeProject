@@ -18,6 +18,9 @@ router.get("/:id", isAuthenticated, userController.getUserById);
 // Unprotected route: Create a new user (no authentication required)
 router.post("/createUser", userController.createUser);
 
+router.put("/:id", isAuthenticated, userController.updateUser);
+
+
 // Unprotected route: Login (no authentication required)
 router.post("/login", userController.login);
 
