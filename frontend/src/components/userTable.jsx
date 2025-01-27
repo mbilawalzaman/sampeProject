@@ -11,9 +11,10 @@ const UserTable = () => {
   const [updatedName, setUpdatedName] = useState("");
   const [updatedEmail, setUpdatedEmail] = useState("");
   const [updatedPassword, setUpdatedPassword] = useState("");
+  const [userRole, setUserRole] = useState(null);
+  const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch users function
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -31,8 +32,11 @@ const UserTable = () => {
         navigate("/");
         return;
       }
+
       const data = await response.json();
-      setUsers(data);
+      setUsers(data.users); // Assuming response contains a `users` array
+      setUserRole(data.currentUser.role); // Assuming backend returns the role
+      setUserId(data.currentUser.id); // Assuming backend returns the logged-in user's ID
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -40,12 +44,10 @@ const UserTable = () => {
     }
   };
 
-  // Initial fetch in useEffect
   useEffect(() => {
     fetchUsers();
   }, [navigate]);
 
-  // Function to handle user update
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     const updatedUser = {
@@ -64,15 +66,14 @@ const UserTable = () => {
           },
           body: JSON.stringify(updatedUser),
           credentials: "include",
-        },
+        }
       );
 
       if (!response.ok) {
         throw new Error("Failed to update user.");
       }
 
-      // Close modal and refresh user list
-      await fetchUsers(); // Refetch the updated user list
+      await fetchUsers(); // Refresh the list
       setShowModal(false);
     } catch (err) {
       setError(err.message);
@@ -95,9 +96,11 @@ const UserTable = () => {
   if (loading) return <p>Loading users...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  const filteredUsers = users.filter((user) =>
-    user.id.toString().includes(searchId),
-  );
+  // Filter users based on role
+  const filteredUsers =
+    userRole === "admin"
+      ? users
+      : users.filter((user) => user.id === userId);
 
   return (
     <div>
@@ -121,7 +124,9 @@ const UserTable = () => {
             <th className="px-4 py-2 border border-gray-300">ID</th>
             <th className="px-4 py-2 border border-gray-300">Name</th>
             <th className="px-4 py-2 border border-gray-300">Email</th>
-            <th className="px-4 py-2 border border-gray-300">Actions</th>
+            {userRole === "admin" && (
+              <th className="px-4 py-2 border border-gray-300">Actions</th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -129,28 +134,29 @@ const UserTable = () => {
             filteredUsers.map((user) => (
               <tr
                 key={user.id}
-                className="bg-white hover:bg-gray-100 text-center text-black">
+                className="bg-white hover:bg-gray-100 text-center text-black"
+              >
                 <td className="px-4 py-2 border border-gray-300">{user.id}</td>
-                <td className="px-4 py-2 border border-gray-300">
-                  {user.name}
-                </td>
-                <td className="px-4 py-2 border border-gray-300">
-                  {user.email}
-                </td>
-                <td className="px-4 py-2 border border-gray-300">
-                  <button
-                    onClick={() => handleEditClick(user)}
-                    className="bg-yellow-500 text-white px-4 py-2 rounded">
-                    Edit
-                  </button>
-                </td>
+                <td className="px-4 py-2 border border-gray-300">{user.name}</td>
+                <td className="px-4 py-2 border border-gray-300">{user.email}</td>
+                {userRole === "admin" && (
+                  <td className="px-4 py-2 border border-gray-300">
+                    <button
+                      onClick={() => handleEditClick(user)}
+                      className="bg-yellow-500 text-white px-4 py-2 rounded"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                )}
               </tr>
             ))
           ) : (
             <tr>
               <td
-                colSpan="4"
-                className="text-center px-4 py-2 border border-gray-300">
+                colSpan={userRole === "admin" ? 4 : 3}
+                className="text-center px-4 py-2 border border-gray-300"
+              >
                 No users found
               </td>
             </tr>
@@ -205,12 +211,14 @@ const UserTable = () => {
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="bg-gray-400 text-white px-4 py-2 rounded">
+                  className="bg-gray-400 text-white px-4 py-2 rounded"
+                >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded">
+                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                >
                   Save Changes
                 </button>
               </div>
