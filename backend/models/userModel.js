@@ -17,6 +17,11 @@ const User = sequelize.define(
       type: DataTypes.STRING, // Add this if it doesn't exist
       allowNull: true,
     },
+    role: {
+      type: DataTypes.ENUM("admin", "user"), // Restrict roles to "admin" and "user"
+      defaultValue: "user", // Default role for new sign-ups
+      allowNull: false,
+    },
     // Add other fields as needed
   },
   {
