@@ -37,11 +37,30 @@ const ProtectedRoute = ({ children }) => {
     // Set up an interval to periodically check the session status
     const interval = setInterval(() => {
       checkAuth();
-    }, 5000); // Check every 5 seconds (adjust as needed)
+    }, 30000); // Check every 30 seconds
 
     // Cleanup interval on component unmount
     return () => clearInterval(interval);
   }, []);
+
+  // Handle session refresh based on user activity
+  useEffect(() => {
+    const handleUserActivity = () => {
+      if (authStatus) {
+        // Refresh session only if the user is authenticated
+        checkAuth();
+      }
+    };
+
+    const events = ["mousemove", "keydown", "scroll"];
+    events.forEach((event) => window.addEventListener(event, handleUserActivity));
+
+    return () => {
+      events.forEach((event) =>
+        window.removeEventListener(event, handleUserActivity)
+      );
+    };
+  }, [authStatus]);
 
   // If session is invalid, redirect to the login page with a state
   if (authStatus === false) {
@@ -54,7 +73,14 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  return authStatus ? children : null; // Render children if authenticated
+  // Display loading state during initial session check
+  return authStatus === null ? (
+    <div className="min-h-screen flex justify-center items-center">
+      <p>Loading...</p>
+    </div>
+  ) : (
+    children
+  );
 };
 
 export default ProtectedRoute;
