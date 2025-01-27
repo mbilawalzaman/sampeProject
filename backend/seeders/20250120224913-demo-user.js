@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     const existingUsers = await queryInterface.sequelize.query(
-      "SELECT id FROM Users WHERE email IN ('john@example.com', 'jane@example.com')",
+      "SELECT id FROM Users WHERE email IN ('john@example.com', 'admin@example.com')",
       { type: Sequelize.QueryTypes.SELECT }
     );
 
@@ -21,7 +21,7 @@ module.exports = {
           },
           {
             name: "Jane Doe",
-            email: "jane@example.com",
+            email: "admin@example.com",
             password: "hashedpassword",
             role: "admin",
             createdAt: new Date(),
