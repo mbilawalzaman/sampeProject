@@ -1,6 +1,6 @@
 import express from "express";
 import userController from "../Controller/userController.js";
-import { isAuthenticated } from "../middleware/authMiddleware.js"; // Import the middleware
+import { isAuthenticated, isAdmin} from "../middleware/authMiddleware.js"; // Import the middleware
 
 const router = express.Router();
 
@@ -10,7 +10,7 @@ router.get("/message", userController.getMessage);
 router.get("/session-check", userController.checkSession);
 
 // Protected route: Fetch all users (requires authentication)
-router.get("/getUsers", isAuthenticated, userController.getUsers);
+router.get("/getUsers", isAuthenticated, isAdmin, userController.getUsers);
 
 // Protected route: Fetch a user by ID (requires authentication)
 router.get("/:id", isAuthenticated, userController.getUserById);
