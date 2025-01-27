@@ -1,36 +1,46 @@
 "use strict";
 
+const bcrypt = require("bcrypt");
+
 module.exports = {
   async up(queryInterface, Sequelize) {
-    const existingUsers = await queryInterface.sequelize.query(
-      "SELECT id FROM Users WHERE email IN ('john@example.com', 'admin@example.com')",
-      { type: Sequelize.QueryTypes.SELECT }
-    );
+    const saltRounds = 10;
 
-    if (existingUsers.length === 0) {
-      await queryInterface.bulkInsert(
-        "Users",
-        [
-          {
-            name: "John Doe",
-            email: "john@example.com",
-            password: "hashedpassword",
-            role: "user",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          {
-            name: "Jane Doe",
-            email: "admin@example.com",
-            password: "hashedpassword",
-            role: "admin",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        ],
-        {}
-      );
-    }
+    const hashedPasswordUser = await bcrypt.hash("password123", saltRounds); // Password for John
+    const hashedPasswordAdmin = await bcrypt.hash("admin123", saltRounds); // Password for Jane
+
+    await queryInterface.bulkInsert(
+      "Users",
+      [
+        {
+          name: "Admin",
+          email: "admin@example.com",
+          password: hashedPasswordAdmin,
+          role: "admin",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 2,
+          name: "John Doe",
+          email: "john@example.com",
+          password: hashedPasswordUser,
+          role: "user",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+         {
+          id: 3,
+          name: "Bilawal Zaman",
+          email: "bilawal@example.com",
+          password: hashedPasswordUser,
+          role: "user",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+      {}
+    );
   },
 
   async down(queryInterface, Sequelize) {
