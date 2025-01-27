@@ -6,66 +6,46 @@ const UserTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchId, setSearchId] = useState("");
-  const [showModal, setShowModal] = useState(false); // State to show/hide modal
-  const [selectedUser, setSelectedUser] = useState(null); // Store the user to edit
-  const [updatedName, setUpdatedName] = useState(""); // Track the name input for the modal
-  const [updatedEmail, setUpdatedEmail] = useState(""); // Track the email input for the modal
-  const [updatedPassword, setUpdatedPassword] = useState(""); // Track password input for the modal
+  const [showModal, setShowModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [updatedName, setUpdatedName] = useState("");
+  const [updatedEmail, setUpdatedEmail] = useState("");
+  const [updatedPassword, setUpdatedPassword] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:5000/api/users/getUsers",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include", // Ensure cookies are sent with the request
-          }
-        );
-        if (!response.ok) {
-          localStorage.clear();
-          alert("Session expired. Please log in again.");
-          navigate("/");
-          return;
-        }
-        const data = await response.json();
-        setUsers(data);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
+  // Fetch users function
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:5000/api/users/getUsers", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
 
+      if (!response.ok) {
+        localStorage.clear();
+        alert("Session expired. Please log in again.");
+        navigate("/");
+        return;
+      }
+      const data = await response.json();
+      setUsers(data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch in useEffect
+  useEffect(() => {
     fetchUsers();
   }, [navigate]);
 
-  if (loading) return <p>Loading users...</p>;
-  if (error) return <p>Error: {error}</p>;
-
-  // Filter users based on the searchId
-  const filteredUsers = users.filter((user) =>
-    user.id.toString().includes(searchId)
-  );
-
-  const handleEditClick = (user) => {
-    // When the edit button is clicked, open the modal and set the current user info
-    setSelectedUser(user);
-    setUpdatedName(user.name);
-    setUpdatedEmail(user.email);
-    setUpdatedPassword(""); // Don't pre-fill the password
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedUser(null);
-  };
-
+  // Function to handle user update
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     const updatedUser = {
@@ -83,26 +63,41 @@ const UserTable = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedUser),
-          credentials: "include", // Ensure cookies are sent with the request
-        }
+          credentials: "include",
+        },
       );
 
       if (!response.ok) {
         throw new Error("Failed to update user.");
       }
 
-      // After updating, refresh the users list and close the modal
-      const updatedUserData = await response.json();
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === updatedUserData.id ? updatedUserData : user
-        )
-      );
+      // Close modal and refresh user list
+      await fetchUsers(); // Refetch the updated user list
       setShowModal(false);
     } catch (err) {
       setError(err.message);
     }
   };
+
+  const handleEditClick = (user) => {
+    setSelectedUser(user);
+    setUpdatedName(user.name);
+    setUpdatedEmail(user.email);
+    setUpdatedPassword("");
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedUser(null);
+  };
+
+  if (loading) return <p>Loading users...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  const filteredUsers = users.filter((user) =>
+    user.id.toString().includes(searchId),
+  );
 
   return (
     <div>
@@ -115,7 +110,7 @@ const UserTable = () => {
           id="searchId"
           className="border border-gray-300 rounded px-3 py-1"
           value={searchId}
-          onChange={(e) => setSearchId(e.target.value)} // Update searchId on input change
+          onChange={(e) => setSearchId(e.target.value)}
           placeholder="Enter user ID"
         />
       </div>
@@ -126,7 +121,7 @@ const UserTable = () => {
             <th className="px-4 py-2 border border-gray-300">ID</th>
             <th className="px-4 py-2 border border-gray-300">Name</th>
             <th className="px-4 py-2 border border-gray-300">Email</th>
-            <th className="px-4 py-2 border border-gray-300">Actions</th> {/* Added actions column */}
+            <th className="px-4 py-2 border border-gray-300">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -134,16 +129,18 @@ const UserTable = () => {
             filteredUsers.map((user) => (
               <tr
                 key={user.id}
-                className="bg-white hover:bg-gray-100 text-center text-black"
-              >
+                className="bg-white hover:bg-gray-100 text-center text-black">
                 <td className="px-4 py-2 border border-gray-300">{user.id}</td>
-                <td className="px-4 py-2 border border-gray-300">{user.name}</td>
-                <td className="px-4 py-2 border border-gray-300">{user.email}</td>
+                <td className="px-4 py-2 border border-gray-300">
+                  {user.name}
+                </td>
+                <td className="px-4 py-2 border border-gray-300">
+                  {user.email}
+                </td>
                 <td className="px-4 py-2 border border-gray-300">
                   <button
                     onClick={() => handleEditClick(user)}
-                    className="bg-yellow-500 text-white px-4 py-2 rounded"
-                  >
+                    className="bg-yellow-500 text-white px-4 py-2 rounded">
                     Edit
                   </button>
                 </td>
@@ -153,8 +150,7 @@ const UserTable = () => {
             <tr>
               <td
                 colSpan="4"
-                className="text-center px-4 py-2 border border-gray-300"
-              >
+                className="text-center px-4 py-2 border border-gray-300">
                 No users found
               </td>
             </tr>
@@ -162,14 +158,15 @@ const UserTable = () => {
         </tbody>
       </table>
 
-      {/* Modal for editing user */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-md w-1/3">
             <h3 className="text-xl font-bold mb-4">Edit User</h3>
             <form onSubmit={handleUpdateUser}>
               <div className="mb-4">
-                <label htmlFor="name" className="block mb-2">Name</label>
+                <label htmlFor="name" className="block mb-2">
+                  Name
+                </label>
                 <input
                   type="text"
                   id="name"
@@ -180,7 +177,9 @@ const UserTable = () => {
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="email" className="block mb-2">Email</label>
+                <label htmlFor="email" className="block mb-2">
+                  Email
+                </label>
                 <input
                   type="email"
                   id="email"
@@ -191,7 +190,9 @@ const UserTable = () => {
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="password" className="block mb-2">Password (Leave empty to keep current)</label>
+                <label htmlFor="password" className="block mb-2">
+                  Password (Leave empty to keep current)
+                </label>
                 <input
                   type="password"
                   id="password"
@@ -204,14 +205,12 @@ const UserTable = () => {
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="bg-gray-400 text-white px-4 py-2 rounded"
-                >
+                  className="bg-gray-400 text-white px-4 py-2 rounded">
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded"
-                >
+                  className="bg-blue-500 text-white px-4 py-2 rounded">
                   Save Changes
                 </button>
               </div>

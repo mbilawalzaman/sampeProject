@@ -44,7 +44,7 @@ const LoginPage = () => {
       setMessage(data.message);
       // After successful login, redirect to the dashboard page
       localStorage.setItem("token", data.token);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -108,8 +108,7 @@ const LoginPage = () => {
             disabled={loading}
             className={`w-full py-2 bg-blue-500 text-white font-semibold rounded-lg focus:outline-none ${
               loading ? "opacity-50" : ""
-            }`}
-          >
+            }`}>
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
@@ -120,8 +119,7 @@ const LoginPage = () => {
             Don't have an account?{" "}
             <button
               onClick={handleSignUpRedirect}
-              className="text-blue-500 hover:underline focus:outline-none font-semibold"
-            >
+              className="text-blue-500 hover:underline focus:outline-none font-semibold">
               Sign up
             </button>
           </p>

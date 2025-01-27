@@ -13,6 +13,10 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    name: {
+      type: DataTypes.STRING, // Add this if it doesn't exist
+      allowNull: true,
+    },
     // Add other fields as needed
   },
   {
