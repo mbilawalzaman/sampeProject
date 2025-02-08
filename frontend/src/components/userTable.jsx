@@ -26,12 +26,12 @@ const UserTable = () => {
         credentials: "include",
       });
 
-      if (!response.ok) {
-        localStorage.clear();
-        alert("Session expired. Please log in again.");
-        navigate("/");
-        return;
-      }
+      // if (!response.ok) {
+      //   localStorage.clear();
+      //   alert("Session expired. Please log in again.");
+      //   navigate("/");
+      //   return;
+      // }
 
       const data = await response.json();
       setUsers(data.users); // Assuming response contains a `users` array
@@ -66,7 +66,7 @@ const UserTable = () => {
           },
           body: JSON.stringify(updatedUser),
           credentials: "include",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -98,9 +98,7 @@ const UserTable = () => {
 
   // Filter users based on role
   const filteredUsers =
-    userRole === "admin"
-      ? users
-      : users.filter((user) => user.id === userId);
+    userRole === "admin" ? users : users.filter((user) => user.id === userId);
 
   return (
     <div>
@@ -134,17 +132,19 @@ const UserTable = () => {
             filteredUsers.map((user) => (
               <tr
                 key={user.id}
-                className="bg-white hover:bg-gray-100 text-center text-black"
-              >
+                className="bg-white hover:bg-gray-100 text-center text-black">
                 <td className="px-4 py-2 border border-gray-300">{user.id}</td>
-                <td className="px-4 py-2 border border-gray-300">{user.name}</td>
-                <td className="px-4 py-2 border border-gray-300">{user.email}</td>
+                <td className="px-4 py-2 border border-gray-300">
+                  {user.name}
+                </td>
+                <td className="px-4 py-2 border border-gray-300">
+                  {user.email}
+                </td>
                 {userRole === "admin" && (
                   <td className="px-4 py-2 border border-gray-300">
                     <button
                       onClick={() => handleEditClick(user)}
-                      className="bg-yellow-500 text-white px-4 py-2 rounded"
-                    >
+                      className="bg-yellow-500 text-white px-4 py-2 rounded">
                       Edit
                     </button>
                   </td>
@@ -155,8 +155,7 @@ const UserTable = () => {
             <tr>
               <td
                 colSpan={userRole === "admin" ? 4 : 3}
-                className="text-center px-4 py-2 border border-gray-300"
-              >
+                className="text-center px-4 py-2 border border-gray-300">
                 No users found
               </td>
             </tr>
@@ -211,14 +210,12 @@ const UserTable = () => {
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="bg-gray-400 text-white px-4 py-2 rounded"
-                >
+                  className="bg-gray-400 text-white px-4 py-2 rounded">
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded"
-                >
+                  className="bg-blue-500 text-white px-4 py-2 rounded">
                   Save Changes
                 </button>
               </div>

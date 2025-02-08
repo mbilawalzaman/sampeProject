@@ -12,15 +12,16 @@ function App() {
         {/* Public Route */}
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         {/* Protected Route */}
-        <Route
+        {/* <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <DashboardPage />
             </ProtectedRoute>
           }
-        />
+        /> */}
       </Routes>
     </Router>
   );

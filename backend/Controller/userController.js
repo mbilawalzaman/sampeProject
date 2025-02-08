@@ -10,8 +10,30 @@ const userController = {
   // Fetch all users
   getUsers: async (req, res) => {
     try {
-      const users = await User.findAll(); // Fetch all users using Sequelize
-      res.json(users);
+      const currentUser = req.session.user; // Get the current user from the session
+
+      // If no user is logged in, return Unauthorized
+      if (!currentUser) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      console.log(currentUser.role); // Log the role to check if it's set correctly
+
+      // If the user is a regular user, return only their own info
+      if (currentUser.role === "user") {
+        const user = await User.findOne({ where: { id: currentUser.id } });
+        return res.json({
+          users: [user], // Return only the current user's data
+          currentUser, // Send current user info back to frontend
+        });
+      }
+
+      // If the user is an admin, return all users
+      const users = await User.findAll();
+      res.json({
+        users, // Return all users for admin
+        currentUser, // Send current user info back to frontend
+      });
     } catch (err) {
       console.error(err);
       res.status(500).send("Database error");
@@ -64,7 +86,8 @@ const userController = {
     // Validate at least one field to update
     if (!name && !email && !password && !role) {
       return res.status(400).json({
-        error: "At least one field (name, email, password, or role) is required to update!",
+        error:
+          "At least one field (name, email, password, or role) is required to update!",
       });
     }
 
@@ -148,8 +171,12 @@ const userController = {
         { expiresIn: "1h" },
       );
 
-      // Store user session
-      req.session.user = { id: user.id, email: user.email }; // Store user info in the session
+      // Store user session with role
+      req.session.user = {
+        id: user.id,
+        email: user.email,
+        role: user.role, // Include role in the session
+      };
 
       // Send the token and success message
       res.json({
@@ -157,6 +184,9 @@ const userController = {
         token,
         user: req.session.user, // Include session user info in the response
       });
+
+      // Log the role of the user from the session
+      console.log(req.session.user.role); // This will log the role
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Server error" });

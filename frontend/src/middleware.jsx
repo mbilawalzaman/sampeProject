@@ -7,7 +7,7 @@ const isAuthenticated = async () => {
       "http://localhost:5000/api/users/session-check",
       {
         credentials: "include", // Include cookies for session-based authentication
-      }
+      },
     );
 
     if (!response.ok) {
@@ -37,50 +37,18 @@ const ProtectedRoute = ({ children }) => {
     // Set up an interval to periodically check the session status
     const interval = setInterval(() => {
       checkAuth();
-    }, 30000); // Check every 30 seconds
+    }, 5000); // Check every 5 seconds (adjust as needed)
 
     // Cleanup interval on component unmount
     return () => clearInterval(interval);
   }, []);
 
-  // Handle session refresh based on user activity
-  useEffect(() => {
-    const handleUserActivity = () => {
-      if (authStatus) {
-        // Refresh session only if the user is authenticated
-        checkAuth();
-      }
-    };
-
-    const events = ["mousemove", "keydown", "scroll"];
-    events.forEach((event) => window.addEventListener(event, handleUserActivity));
-
-    return () => {
-      events.forEach((event) =>
-        window.removeEventListener(event, handleUserActivity)
-      );
-    };
-  }, [authStatus]);
-
-  // If session is invalid, redirect to the login page with a state
-  if (authStatus === false) {
-    return (
-      <Navigate
-        to="/"
-        replace
-        state={{ from: "protected", reason: "pleaseLogin" }}
-      />
-    );
+  if (authStatus === null) {
+    return <div>Loading...</div>; // Show a loading indicator while checking the session
   }
 
-  // Display loading state during initial session check
-  return authStatus === null ? (
-    <div className="min-h-screen flex justify-center items-center">
-      <p>Loading...</p>
-    </div>
-  ) : (
-    children
-  );
+  // If session is invalid, redirect to the login page
+  return authStatus ? children : <Navigate to="/" replace />;
 };
 
 export default ProtectedRoute;
