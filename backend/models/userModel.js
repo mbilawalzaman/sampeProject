@@ -18,7 +18,7 @@ const User = sequelize.define(
       allowNull: true,
     },
     role: {
-      type: DataTypes.ENUM("admin", "user"), // Restrict roles to "admin" and "user"
+      type: DataTypes.ENUM("admin", "user", "employer"), // Restrict roles to "admin" and "user"
       defaultValue: "user", // Default role for new sign-ups
       allowNull: false,
     },
@@ -26,7 +26,7 @@ const User = sequelize.define(
   },
   {
     tableName: "users", // Specify the table name
-    timestamps: false, // Disable timestamps if not required
+    timestamps: true, // Disable timestamps if not required
   },
 );
 

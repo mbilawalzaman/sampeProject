@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import session from "express-session"; // Import express-session
 import userRoutes from "./routes/userroutes.js"; // Import user routes (note the .js extension)
+import jobRoutes from "./routes/jobRoutes.js"
 
 dotenv.config();
 
@@ -29,7 +30,7 @@ app.use(
     resave: false, // Prevent session being saved back to the store unless modified
     saveUninitialized: false, // Don't save uninitialized sessions
     cookie: {
-      maxAge: 1000 * 60, // 1 Minutes
+      maxAge: 1000 * 60 * 60, // 1 hour
       httpOnly: true, // Prevent client-side JavaScript from accessing cookies
       secure: process.env.NODE_ENV === "production", // Use secure cookies in production
     },
@@ -38,6 +39,8 @@ app.use(
 
 // Register routes
 app.use("/api/users", userRoutes); // Define routes for users
+app.use("/api/jobs", jobRoutes); // Define routes for jobs
+
 
 const PORT = process.env.PORT || 5000; // Default port 5000, or use the environment variable
 app.listen(PORT, () => {

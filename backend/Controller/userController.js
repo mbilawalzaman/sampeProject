@@ -9,6 +9,7 @@ dotenv.config();
 const userController = {
   // Fetch all users
   getUsers: async (req, res) => {
+    
     try {
       const currentUser = req.session.user; // Get the current user from the session
 
