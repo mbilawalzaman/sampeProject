@@ -1,48 +1,67 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import UserTable from "../components/userTable"; // Import the UserTable component
+import JobTable from "../components/jobTable"; // Import the JobTable component
 
 const DashboardPage = () => {
-  const navigate = useNavigate(); // Initialize the navigate function
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
 
-  // Check if the user is logged in by checking for the JWT token in localStorage
-  const token = localStorage.getItem("token");
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        // First, check session to get the user's ID
+        const sessionRes = await fetch("http://localhost:5000/api/users/session-check", {
+          credentials: "include",
+        });
+  
+        if (!sessionRes.ok) throw new Error("Failed to check session");
+  
+        const sessionData = await sessionRes.json();
+        const userId = sessionData.user?.id; // Assuming session-check returns user info
+  
+        if (!userId) throw new Error("User ID not found in session");
+  
+        // Now, fetch user details using the ID
+        const userRes = await fetch(`http://localhost:5000/api/users/${userId}`, {
+          credentials: "include",
+        });
+  
+        if (!userRes.ok) throw new Error("Failed to fetch user data");
+  
+        const userData = await userRes.json();
+        setUser(userData);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        navigate("/");
+      }
+    };
+  
+    fetchUser();
+  }, [navigate]);
+  
 
-  // If the token is not available, redirect to the login page
-  if (!token) {
-    navigate("/"); // Use navigate to redirect to the login page if not logged in
-  }
-
-  // Function to handle logout
+  // Logout function
   const handleLogout = async () => {
-    try {
-      // Send a POST request to the logout API to destroy the session
-      await fetch("http://localhost:5000/api/users/logout", {
-        method: "POST",
-        credentials: "include", // Important to include cookies for session handling
-      });
-
-      // Clear the localStorage (optional if you want to manage it here)
-      localStorage.clear();
-
-      // Redirect the user to the login page
-      navigate("/");
-    } catch (error) {
-      console.error("Error during logout:", error);
-    }
+    await fetch("http://localhost:5000/api/users/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+    localStorage.clear();
+    navigate("/");
   };
+
+  if (!user) return <div>Loading...</div>; // Show a loading state
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-2xl font-bold text-center mb-6">User Dashboard</h1>
-      <div className="text-right mb-4">
-        <button
-          onClick={handleLogout} // Call handleLogout when the button is clicked
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
           Logout
         </button>
       </div>
-      <UserTable /> {/* Render the UserTable component */}
+
+      <JobTable userRole={user.role} userId={user.id} /> {/* Pass role & ID */}
     </div>
   );
 };

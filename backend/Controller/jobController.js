@@ -124,50 +124,107 @@ const jobController = {
 },
 
   // Apply for job (Authenticated users)
-  applyForJob: async (req, res) => {
-    try {
-        if (!req.session || !req.session.user) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
+//   applyForJob: async (req, res) => {
+//     try {
+//         if (!req.session || !req.session.user) {
+//             return res.status(401).json({ error: "Unauthorized" });
+//         }
 
-        const { coverLetter } = req.body;
-        const userId = req.session.user.id;
-        const jobId = req.query.id; // Get job ID from query parameters
+//         const { coverLetter } = req.body;
+//         const userId = req.session.user.id;
+//         const jobId = req.query.id; // Get job ID from query parameters
 
-        if (!jobId) {
-            return res.status(400).json({ error: "Job ID is required" });
-        }
+//         if (!jobId) {
+//             return res.status(400).json({ error: "Job ID is required" });
+//         }
 
-        const existingApplication = await JobApplication.findOne({
-            where: { userId, jobId },
-        });
+//         const existingApplication = await JobApplication.findOne({
+//             where: { userId, jobId },
+//         });
 
-        if (existingApplication) {
-            return res.status(400).json({ error: "Already applied to this job" });
-        }
+//         if (existingApplication) {
+//             return res.status(400).json({ error: "Already applied to this job" });
+//         }
 
-        const application = await JobApplication.create({
-            jobId,
-            userId,
-            coverLetter,
-            status: "pending",
-        });
+//         const application = await JobApplication.create({
+//             jobId,
+//             userId,
+//             coverLetter,
+//             status: "pending",
+//         });
 
-        res.status(201).json({ message: "Application submitted successfully", application });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Server error" });
-    }
-},
+//         res.status(201).json({ message: "Application submitted successfully", application });
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ error: "Server error" });
+//     }
+// },
 
-  // Get applications for a job (Admin/Employer only)
-  getJobApplications: async (req, res) => {
-    try {
-      const applications = await JobApplication.findAll({
-        where: { jobId: req.params.jobId },
-        include: [{ model: User, attributes: ["name", "email"] }],
+applyForJob: async (req, res) => {
+  try {
+      if (!req.session || !req.session.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { coverLetter } = req.body;
+      const userId = req.session.user.id;
+      const jobId = req.query.id;
+      const cv = req.file ? req.file.filename : null; // Get uploaded CV file name
+
+      if (!jobId) {
+          return res.status(400).json({ error: "Job ID is required" });
+      }
+
+      const existingApplication = await JobApplication.findOne({
+          where: { userId, jobId },
       });
 
+      if (existingApplication) {
+          return res.status(400).json({ error: "Already applied to this job" });
+      }
+
+      const application = await JobApplication.create({
+          jobId,
+          userId,
+          coverLetter,
+          cv, // Store CV file name
+          status: "pending",
+      });
+
+      res.status(201).json({ message: "Application submitted successfully", application });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+  }
+},
+
+
+  // Get applications for a job (Admin/Employer only)
+  getJobApplicationById: async (req, res) => {
+    try {
+      const { jobId } = req.query; // Use query instead of params
+      if (!jobId) return res.status(400).json({ error: "Job ID is required" });
+  
+      const applications = await JobApplication.findAll({
+        where: { jobId },
+        include: [{ model: User, attributes: ["name", "email"] }],
+      });
+  
+      res.json({ applications });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  },
+// Update get All jobs Applications (Admin/Employer only)
+  
+  getAllJobApplications: async (req, res) => {
+    try {
+      const applications = await JobApplication.findAll({
+        include: [{ model: User, attributes: ["name", "email"] }],
+        order: [["createdAt", "DESC"]], // Optional: Sort by latest applications
+      });
+  
       res.json({ applications });
     } catch (err) {
       console.error(err);
@@ -179,20 +236,22 @@ const jobController = {
   updateApplicationStatus: async (req, res) => {
     try {
       if (!req.session || !req.session.user) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: "Unauthorized, Please login" });
       }
 
       const { status } = req.body;
-      const application = await JobApplication.findByPk(req.params.applicationId);
+      console.log("applicationId", req.query.jobId)
+      const application = await JobApplication.findByPk(req.query.applicationId);
       if (!application) {
         return res.status(404).json({ error: "Application not found" });
       }
 
       const job = await Job.findByPk(application.jobId);
+
       if (req.session.user.role !== "admin" && job.employerId !== req.session.user.id) {
         return res.status(403).json({ error: "Unauthorized to update this application" });
       }
-
+      
       application.status = status;
       await application.save();
 

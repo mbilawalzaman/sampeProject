@@ -40,7 +40,11 @@ const JobApplication = sequelize.define("JobApplication", {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     allowNull: false
-  }
+  },
+  cv: {
+    type: DataTypes.STRING, // Store file path or URL
+    allowNull: true
+  }  
 }, {
   tableName: "job_applications",
   timestamps: true,

@@ -1,6 +1,7 @@
 import express from "express";
 import jobController from "../controller/jobController.js"; // Ensure correct case
 import { isAuthenticated, authorizedRole } from "../middleware/authMiddleware.js"; // Import the middleware
+import upload from "../middleware/upload.js";
 
 
 const router = express.Router();
@@ -19,7 +20,20 @@ router.delete("/deleteJob", isAuthenticated, jobController.deleteJob);
 
 // JOb Application
 
-router.post("/applyForJob", isAuthenticated, jobController.applyForJob);
+// router.post("/applyForJob", isAuthenticated, jobController.applyForJob);
+router.post("/applyForJob", isAuthenticated, upload.single("cv"), jobController.applyForJob);
+
+
+router.get("/getJobApplicationById", jobController.getJobApplicationById);
+
+router.get("/getAllJobApplications", jobController.getAllJobApplications);
+
+
+router.put("/updateApplicationStatus", jobController.updateApplicationStatus);
+
+
+
+
 
 
 

@@ -5,8 +5,14 @@ import dotenv from "dotenv";
 import session from "express-session"; // Import express-session
 import userRoutes from "./routes/userroutes.js"; // Import user routes (note the .js extension)
 import jobRoutes from "./routes/jobRoutes.js"
+import path from "path";
+import { fileURLToPath } from "url";
+
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url); // Get current file path
+const __dirname = path.dirname(__filename); // Get directory name
 
 const app = express();
 
@@ -40,6 +46,7 @@ app.use(
 // Register routes
 app.use("/api/users", userRoutes); // Define routes for users
 app.use("/api/jobs", jobRoutes); // Define routes for jobs
+app.use("/uploads/cvs", express.static(path.join(__dirname, "uploads/cvs")));
 
 
 const PORT = process.env.PORT || 5000; // Default port 5000, or use the environment variable

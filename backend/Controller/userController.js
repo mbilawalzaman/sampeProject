@@ -153,7 +153,7 @@ const userController = {
     try {
       // Check if user exists in the database
       const user = await User.findOne({ where: { email } });
-
+      console.log(user.name)
       // If no user found
       if (!user) {
         return res.status(400).json({ error: "Invalid credentials" });
@@ -171,12 +171,13 @@ const userController = {
         process.env.JWT_SECRET_KEY,
         { expiresIn: "1h" },
       );
-
       // Store user session with role
+      
       req.session.user = {
         id: user.id,
         email: user.email,
         role: user.role, // Include role in the session
+        name: user.name
       };
 
       // Send the token and success message
