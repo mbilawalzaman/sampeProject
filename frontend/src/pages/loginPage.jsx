@@ -44,7 +44,7 @@ const LoginPage = () => {
       setMessage(data.message);
       // After successful login, redirect to the dashboard page
       localStorage.setItem("token", data.token);
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       setError(err.message);
     } finally {

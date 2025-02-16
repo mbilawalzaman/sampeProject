@@ -153,7 +153,6 @@ const userController = {
     try {
       // Check if user exists in the database
       const user = await User.findOne({ where: { email } });
-      console.log(user.name)
       // If no user found
       if (!user) {
         return res.status(400).json({ error: "Invalid credentials" });

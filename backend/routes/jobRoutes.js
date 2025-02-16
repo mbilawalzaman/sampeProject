@@ -26,7 +26,7 @@ router.post("/applyForJob", isAuthenticated, upload.single("cv"), jobController.
 
 router.get("/getJobApplicationById", jobController.getJobApplicationById);
 
-router.get("/getAllJobApplications", jobController.getAllJobApplications);
+router.get("/getAllJobApplications",isAuthenticated, jobController.getAllJobApplications);
 
 
 router.put("/updateApplicationStatus", jobController.updateApplicationStatus);

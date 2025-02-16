@@ -10,9 +10,10 @@ function App() {
     <Router>
       <Routes>
         {/* Public Route */}
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/signin" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+        {/* <Route path="/" element={<LoginPage />} /> */}
         {/* Protected Route */}
         {/* <Route
           path="/dashboard"

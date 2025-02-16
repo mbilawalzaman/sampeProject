@@ -33,7 +33,7 @@ const DashboardPage = () => {
         setUser(userData);
       } catch (error) {
         console.error("Error fetching user:", error);
-        navigate("/");
+        navigate("/signin");
       }
     };
 
@@ -46,7 +46,7 @@ const DashboardPage = () => {
       credentials: "include",
     });
     localStorage.clear();
-    navigate("/");
+    navigate("/signin");
   };
 
   if (!user) return <div className="flex justify-center items-center h-screen">Loading...</div>;

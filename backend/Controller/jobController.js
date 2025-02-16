@@ -218,20 +218,45 @@ applyForJob: async (req, res) => {
   },
 // Update get All jobs Applications (Admin/Employer only)
   
-  getAllJobApplications: async (req, res) => {
-    try {
-      const applications = await JobApplication.findAll({
-        include: [{ model: User, attributes: ["name", "email"] }],
-        order: [["createdAt", "DESC"]], // Optional: Sort by latest applications
-      });
-  
-      res.json({ applications });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Server error" });
-    }
-  },
+getAllJobApplications: async (req, res) => {
+  try {
+    console.log("Request Session User:", req.session.user);
 
+    const user = req.session.user;
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    let whereClause = {};
+    if (user.role === "employer") {
+      whereClause = { employerId: user.id };
+    } else if (user.role === "user") {
+      whereClause = { userId: user.id }; // Ensure JobApplication has `userId`
+    }
+
+    console.log("whereClause ==>", whereClause);
+
+    const applications = await JobApplication.findAll({
+      where: whereClause,
+      include: [
+        { model: User, attributes: ["name", "email"] }, // Applicant details
+        {
+          model: Job,
+          attributes: ["title", "description"],
+          include: [{ model: User, as: "employer", attributes: ["name"] }], // Employer name
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+    
+    console.log("Applications found:", applications);
+
+    res.json({ applications });
+  } catch (err) {
+    console.error("Error fetching applications:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+},
   // Update application status (Admin/Employer only)
   updateApplicationStatus: async (req, res) => {
     try {
