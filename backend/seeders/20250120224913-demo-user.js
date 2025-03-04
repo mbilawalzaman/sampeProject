@@ -11,9 +11,6 @@ export default {
     const hashedPasswordAdmin = await bcrypt.hash("admin123", saltRounds);
     const hashedPasswordEmployer = await bcrypt.hash("employer123", saltRounds);
 
-    // Log hashed passwords (optional for debugging)
-    console.log({ hashedPasswordUser, hashedPasswordAdmin, hashedPasswordEmployer });
-
     // Insert Users
     const users = [
       {
@@ -50,7 +47,7 @@ export default {
       },
     ];
 
-    console.log("Users to be inserted:", users);
+    // console.log("Users to be inserted:", users);
 
     await queryInterface.bulkInsert("Users", users, {});
 

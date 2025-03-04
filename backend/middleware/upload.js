@@ -10,7 +10,6 @@ const storage = multer.diskStorage({
     if (!req.session || !req.session.user) {
       return cb(new Error("Unauthorized"), null);
     }
-    console.log("Checking the name ===>",req.session.user.name)
     const username = req.session.user.name.replace(/\s+/g, "_"); // Replace spaces with underscores
     const ext = path.extname(file.originalname); // Get file extension
     cb(null, `${username}-cv${ext}`); // Format: "Bilawal_Zaman-cv.pdf"

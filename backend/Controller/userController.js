@@ -9,7 +9,7 @@ dotenv.config();
 const userController = {
   // Fetch all users
   getUsers: async (req, res) => {
-    
+
     try {
       const currentUser = req.session.user; // Get the current user from the session
 
@@ -17,8 +17,6 @@ const userController = {
       if (!currentUser) {
         return res.status(401).json({ error: "Unauthorized" });
       }
-
-      console.log(currentUser.role); // Log the role to check if it's set correctly
 
       // If the user is a regular user, return only their own info
       if (currentUser.role === "user") {
@@ -140,7 +138,6 @@ const userController = {
       }
 
       res.status(200).json(user);
-      console.log(res);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Server error" });
@@ -171,7 +168,7 @@ const userController = {
         { expiresIn: "1h" },
       );
       // Store user session with role
-      
+
       req.session.user = {
         id: user.id,
         email: user.email,
@@ -185,9 +182,6 @@ const userController = {
         token,
         user: req.session.user, // Include session user info in the response
       });
-
-      // Log the role of the user from the session
-      console.log(req.session.user.role); // This will log the role
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Server error" });
@@ -196,7 +190,7 @@ const userController = {
 
   getMessage: async (req, res) => {
     const randomKey = randomBytes(32).toString("hex"); // Generate a random key
-    console.log("Generated random key:", randomKey);
+    // console.log("Generated random key:", randomKey);
 
     res.json({ message: "Hello from the controller!", randomKey });
   },
