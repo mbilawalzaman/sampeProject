@@ -2,54 +2,86 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
-import session from "express-session"; // Import express-session
-import userRoutes from "./routes/userroutes.js"; // Import user routes (note the .js extension)
-import jobRoutes from "./routes/jobRoutes.js"
+import session from "express-session";
+import userRoutes from "./routes/userroutes.js";
+import jobRoutes from "./routes/jobRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
-
+import { createServer } from "http"; // Required for socket.io
+import { Server } from "socket.io"; // Import socket.io
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url); // Get current file path
-const __dirname = path.dirname(__filename); // Get directory name
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
+const server = createServer(app); // Create HTTP server
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
-// Configure CORS
+// Store online users
+const onlineUsers = {};
+
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  socket.on("userLoggedIn", (userId) => {
+    onlineUsers[userId] = socket.id;
+    console.log(`User ${userId} connected with socket ID: ${socket.id}`);
+
+    // Send a test notification to this user
+    socket.emit("notification", { message: "Welcome! You are now connected." });
+  });
+
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected:", socket.id);
+    for (const userId in onlineUsers) {
+      if (onlineUsers[userId] === socket.id) {
+        delete onlineUsers[userId];
+        break;
+      }
+    }
+  });
+});
+
 const corsOptions = {
-  origin: process.env.CLIENT_URL || "http://localhost:3000", // Frontend URL, replace with actual URL in production
-  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
-  credentials: true, // Allow cookies to be sent with requests
+  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
 };
 
-app.use(cors(corsOptions)); // Use CORS with options
-
-// Middleware to parse JSON requests
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(bodyParser.json());
 
-// Session middleware configuration
 app.use(
   session({
     secret: process.env.SESSION_SECRET_KEY,
-    resave: false, // Prevent session being saved back to the store unless modified
-    saveUninitialized: false, // Don't save uninitialized sessions
+    resave: false,
+    saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60, // 1 hour
-      httpOnly: true, // Prevent client-side JavaScript from accessing cookies
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      maxAge: 1000 * 60 * 60,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
     },
   }),
 );
 
-// Register routes
-app.use("/api/users", userRoutes); // Define routes for users
-app.use("/api/jobs", jobRoutes); // Define routes for jobs
+app.use("/api/users", userRoutes);
+app.use("/api/jobs", jobRoutes);
 app.use("/uploads/cvs", express.static(path.join(__dirname, "uploads/cvs")));
 
+// Pass `io` to be used in controllers
+app.set("socketio", io);
 
-const PORT = process.env.PORT || 5000; // Default port 5000, or use the environment variable
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
