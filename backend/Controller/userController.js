@@ -176,11 +176,17 @@ const userController = {
         name: user.name
       };
 
+      const io = req.app.get("socketio"); // Get Socket.IO instance from `server.js`
+      io.emit("notification", {
+        message: `Welcome, ${user.name}! You have successfully logged in.`,
+        type: "success",
+      });
+
       // Send the token and success message
       res.json({
-        message: "Login successful",
+        message: `Login successful, ${req.session.user.name}!`, // ✅ Include username
         token,
-        user: req.session.user, // Include session user info in the response
+        user: req.session.user, // Send full user data
       });
     } catch (error) {
       console.error(error);
